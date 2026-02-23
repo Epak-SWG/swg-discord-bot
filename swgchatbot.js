@@ -106,11 +106,8 @@ client.on("messageCreate", async (message) => {
         SWG.debug();
     }
 
-    if (message.channel.name != config.Discord.ChatChannel) { // Only send specific chat channel text to SWG
-        return;
-    }
-
-    SWG.sendChat(message.cleanContent, sender);
+    // SWG chat bridge is intentionally one-way (SWG -> Discord).
+    // Discord messages are no longer forwarded to SWG.
 });
 
 client.on('disconnect', event => {
