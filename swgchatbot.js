@@ -135,10 +135,12 @@ SWG.serverUp = function() {
 }
 
 SWG.recvChat = function(message, player) {
+    var includeRoomLabel = Array.isArray(config.SWG.ChatRooms) && config.SWG.ChatRooms.length > 1;
+    var roomLabel = arguments[2];
     if (verboseDiscordLogging) 
-        console.log(getFullTimestamp() + " - Sending chat to Discord.  Player = " + player + ", message = " + message);
+        console.log(getFullTimestamp() + " - Sending chat to Discord.  Player = " + player + ", message = " + message + (roomLabel ? ", room = " + roomLabel : ""));
     if (chatChannel) {
-        chatChannel.send("**" + player + ":**  " + message);
+        chatChannel.send((includeRoomLabel && roomLabel ? "[" + roomLabel + "] " : "") + "**" + player + ":**  " + message);
     }
     else {
         console.log(getFullTimestamp() + " - Discord disconnected");

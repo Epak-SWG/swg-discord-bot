@@ -20,7 +20,8 @@ module.exports.paused = false;
 module.exports.sendChat = function(message, user) {
     if (!module.exports.isConnected) return;
     if (verboseSWGLogging) console.log(getFullTimestamp() + " - sending chat to game: " + user + ": " + message);
-    send("ChatSendToRoom", {Message: ' \\#ff3333' + user + ': \\#ff66ff' + message, RoomID: server.ChatRoomID});
+    if (server.ChatRoomID)
+        send("ChatSendToRoom", {Message: ' \\#ff3333' + user + ': \\#ff66ff' + message, RoomID: server.ChatRoomID});
 }
 module.exports.recvChat = function(message, player) {}
 module.exports.serverDown = function() {}
@@ -55,6 +56,25 @@ function handleMessage(msg, info) {
         if (handlePacket[packet.type])
             handlePacket[packet.type](packet);
     }
+}
+
+function getConfiguredChatRooms() {
+    if (Array.isArray(server.ChatRooms) && server.ChatRooms.length > 0)
+        return server.ChatRooms;
+    if (server.ChatRoom)
+        return [server.ChatRoom];
+    return [];
+}
+
+function getRoomPath(chatRoom) {
+    if (chatRoom.startsWith("SWG."))
+        return chatRoom;
+    return `SWG.${server.ServerName}.${chatRoom}`;
+}
+
+function getRoomLabel(roomPath) {
+    var parts = roomPath.split(".");
+    return parts[parts.length - 1];
 }
 
 var socket;
@@ -98,42 +118,48 @@ handlePacket["EnumerateCharacterId"] = function(packet) {
 handlePacket["ClientPermissions"] = function(packet) {
     send("SelectCharacter", {CharacterID: server.CharacterID});
     setTimeout(() => {
-        send("ChatCreateRoom", {RoomPath: `SWG.${server.ServerName}.${server.ChatRoom}`})
+        for (var configuredRoom of getConfiguredChatRooms()) {
+            send("ChatCreateRoom", {RoomPath: getRoomPath(configuredRoom)});
+        }
         setTimeout(() => send("CmdSceneReady"), 1000);
     }, 1000);
 }
 handlePacket["ChatRoomList"] = function(packet) {
     if (verboseSWGLogging) console.log(JSON.stringify(packet, null, 2));
+    var roomPaths = getConfiguredChatRooms().map(getRoomPath);
     for (var roomID in packet.Rooms) {
         var room = packet.Rooms[roomID];
-        if (room.RoomPath.endsWith(server.ChatRoom)) {
-            server.ChatRoomID = room.RoomID;
+        if (roomPaths.includes(room.RoomPath)) {
+            server.ChatRoomIDs[room.RoomID] = room.RoomPath;
+            if (!server.ChatRoomID)
+                server.ChatRoomID = room.RoomID;
             send("ChatEnterRoomById", {RoomID: room.RoomID});
         }
     }
 }
 handlePacket["ChatOnEnteredRoom"] = function(packet) {
     if (verboseSWGLogging) console.log(JSON.stringify(packet, null, 2));
-    if (packet.RoomID == server.ChatRoomID && packet.PlayerName == server.Character) {
+    if (server.ChatRoomIDs[packet.RoomID] && packet.PlayerName == server.Character) {
         if (!module.exports.isConnected) {
             module.exports.isConnected = true;
             console.log(getFullTimestamp() + " - Character " + packet.PlayerName + " logged into SWG and entered chatroom ID# " + packet.RoomID);
             module.exports.reconnected();
         }
+        console.log(getFullTimestamp() + " - Joined chat room " + server.ChatRoomIDs[packet.RoomID] + " (ID# " + packet.RoomID + ")");
         if (fails >= 3) module.exports.serverUp();
         fails = 0;
     }
 }
 handlePacket["ChatRoomMessage"] = function(packet) {
     if (verboseSWGLogging) console.log(JSON.stringify(packet, null, 2));
-    if (packet.RoomID == server.ChatRoomID && packet.CharacterName != server.Character.toLowerCase())
-        module.exports.recvChat(packet.Message, packet.CharacterName);
+    if (server.ChatRoomIDs[packet.RoomID] && packet.CharacterName != server.Character.toLowerCase())
+        module.exports.recvChat(packet.Message, packet.CharacterName, getRoomLabel(server.ChatRoomIDs[packet.RoomID]));
 }
 handlePacket["ChatInstantMessageToClient"] = function(packet) {
     module.exports.recvTell(packet.PlayerName, packet.Message);
 }
 handlePacket["ChatOnLeaveRoom"] = function(packet) {
-    if (packet.RoomID == server.ChatRoomID && packet.PlayerName == server.Character) {
+    if (server.ChatRoomIDs[packet.RoomID] && packet.PlayerName == server.Character) {
         console.log(getFullTimestamp() + " - Character " + packet.PlayerName + " has left chatroom ID# " + packet.RoomID + " with error code " + packet.Error);
     }
 }
@@ -152,6 +178,8 @@ function Login() {
     server.Address = server.LoginAddress; 
     server.Port = server.LoginPort;
     server.PingPort = undefined;    //Undefined until we get ping port from login server
+    server.ChatRoomID = undefined;
+    server.ChatRoomIDs = {};
 
     socket = dgram.createSocket('udp4');
     socket.on('message', handleMessage);
