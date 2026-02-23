@@ -19,6 +19,10 @@
         "BotToken": "Bot token from Discord App Page",
         "ServerID": "Discord Server ID",
         "ChatChannel": "chatchannel",
+        "ChatRoomChannels": {
+            "GeneralChatRoomName": "general-chat",
+            "StaffChatRoomName": "staff-chat"
+        },
         "NotificationChannel": "staffchannel",
         "NotificationMentionRole": "staff",
         "NotificationMentionUserID": "If role is blank, can put a Discord user ID here",

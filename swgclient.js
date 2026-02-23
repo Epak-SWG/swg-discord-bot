@@ -153,7 +153,7 @@ handlePacket["ChatOnEnteredRoom"] = function(packet) {
 handlePacket["ChatRoomMessage"] = function(packet) {
     if (verboseSWGLogging) console.log(JSON.stringify(packet, null, 2));
     if (server.ChatRoomIDs[packet.RoomID] && packet.CharacterName != server.Character.toLowerCase())
-        module.exports.recvChat(packet.Message, packet.CharacterName, getRoomLabel(server.ChatRoomIDs[packet.RoomID]));
+        module.exports.recvChat(packet.Message, packet.CharacterName, getRoomLabel(server.ChatRoomIDs[packet.RoomID]), server.ChatRoomIDs[packet.RoomID]);
 }
 handlePacket["ChatInstantMessageToClient"] = function(packet) {
     module.exports.recvTell(packet.PlayerName, packet.Message);

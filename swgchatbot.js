@@ -5,7 +5,7 @@ const config = require('./config.json');
 var verboseDiscordLogging = config.Discord.verboseDiscordLogging;
 
 //Make sure these are global
-var server, chat, notificationChannel, notificationTag, notificationUserID, autoRestartTimer;
+var server, chatChannel, chatRoomChannels, allowedGuildChannelNames, notificationChannel, notificationTag, notificationUserID, autoRestartTimer;
 
 const client = new Client({
     intents: [
@@ -29,6 +29,30 @@ client.once(Events.ClientReady, c => {
     client.user.setPresence({ activities: [{ name: config.Discord.PresenceName, type: ActivityType.Watching }], status: 'online' });
     server = client.guilds.cache.get(config.Discord.ServerID);
     chatChannel = client.channels.cache.find(cc => cc.name === config.Discord.ChatChannel);
+    chatRoomChannels = {};
+    allowedGuildChannelNames = new Set([config.Discord.ChatChannel, config.Discord.NotificationChannel].filter(Boolean));
+
+    if (!chatChannel) {
+        console.log(getFullTimestamp() + " - No default chat channel could be found: " + config.Discord.ChatChannel);
+    }
+
+    var configuredRoomChannels = config.Discord.ChatRoomChannels || {};
+    for (const roomKey in configuredRoomChannels) {
+        const discordChannelName = configuredRoomChannels[roomKey];
+        const configuredChannel = client.channels.cache.find(cc => cc.name === discordChannelName);
+        if (!configuredChannel) {
+            console.log(getFullTimestamp() + " - No Discord channel found for SWG room mapping " + roomKey + " => " + discordChannelName);
+            continue;
+        }
+
+        chatRoomChannels[roomKey.toLowerCase()] = configuredChannel;
+        const roomParts = roomKey.split(".");
+        chatRoomChannels[roomParts[roomParts.length - 1].toLowerCase()] = configuredChannel;
+        allowedGuildChannelNames.add(discordChannelName);
+
+        if (verboseDiscordLogging)
+            console.log(getFullTimestamp() + " - Mapped SWG room " + roomKey + " to Discord channel #" + configuredChannel.name);
+    }
 
     //Server up/down notification stuff here
     notificationChannel = client.channels.cache.find(nc => nc.name === config.Discord.NotificationChannel);
@@ -79,7 +103,7 @@ client.on("messageCreate", async (message) => {
     if (message.channel.type === ChannelType.DM && message.author.id != notificationUserID)    // Ignore DMs from everyone except the notificationUserID user
         return;
 
-    if (message.channel.type === ChannelType.GuildText && message.channel.name != config.Discord.ChatChannel && message.channel.name != config.Discord.NotificationChannel)
+    if (message.channel.type === ChannelType.GuildText && !allowedGuildChannelNames.has(message.channel.name))
         return;
 
     var sender = server.members.cache.get(message.author.id).displayName;    // Get server displayName, if not available will use global displayName
@@ -137,10 +161,21 @@ SWG.serverUp = function() {
 SWG.recvChat = function(message, player) {
     var includeRoomLabel = Array.isArray(config.SWG.ChatRooms) && config.SWG.ChatRooms.length > 1;
     var roomLabel = arguments[2];
-    if (verboseDiscordLogging) 
-        console.log(getFullTimestamp() + " - Sending chat to Discord.  Player = " + player + ", message = " + message + (roomLabel ? ", room = " + roomLabel : ""));
-    if (chatChannel) {
-        chatChannel.send((includeRoomLabel && roomLabel ? "[" + roomLabel + "] " : "") + "**" + player + ":**  " + message);
+    var roomPath = arguments[3];
+    var mappedChannel = undefined;
+
+    if (chatRoomChannels) {
+        mappedChannel = chatRoomChannels[(roomPath || "").toLowerCase()] || chatRoomChannels[(roomLabel || "").toLowerCase()];
+    }
+
+    var targetChannel = mappedChannel || chatChannel;
+
+    if (verboseDiscordLogging)
+        console.log(getFullTimestamp() + " - Sending chat to Discord.  Player = " + player + ", message = " + message + (roomLabel ? ", room = " + roomLabel : "") + (targetChannel ? ", channel = #" + targetChannel.name : ""));
+
+    if (targetChannel) {
+        var shouldPrefixRoom = includeRoomLabel && roomLabel && !mappedChannel;
+        targetChannel.send((shouldPrefixRoom ? "[" + roomLabel + "] " : "") + "**" + player + ":**  " + message);
     }
     else {
         console.log(getFullTimestamp() + " - Discord disconnected");

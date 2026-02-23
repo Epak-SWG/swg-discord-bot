@@ -26,7 +26,7 @@ npm install
 
 to install the necessary dependencies (like the Discord client).
 
-Create a file named config.json with these values populated with your server, account, character, and chat room / channel specifics. Use `SWG.ChatRoom` for one room or `SWG.ChatRooms` to join multiple rooms.  You can copy config.example.json to get you started.
+Create a file named config.json with these values populated with your server, account, character, and chat room / channel specifics. Use `SWG.ChatRoom` for one room or `SWG.ChatRooms` to join multiple rooms. Optionally map specific SWG rooms to specific Discord channels with `Discord.ChatRoomChannels`. You can copy config.example.json to get you started.
 For instance:
 ```json
 {
@@ -51,6 +51,10 @@ For instance:
         "BotToken": "Bot token from Discord App Page",
         "ServerID": "Discord Server ID",
         "ChatChannel": "chatchannel",
+        "ChatRoomChannels": {
+            "GeneralChatRoomName": "general-chat",
+            "StaffChatRoomName": "staff-chat"
+        },
         "NotificationChannel": "staffchannel",
         "NotificationMentionRole": "staff",
 	    "NotificationMentionUserID": "If role is left blank, you can put a Discord user ID here to notify a single user",
@@ -77,7 +81,8 @@ For instance:
 | Discord.PresenceName | The bot will show "Playing PresenceName" |
 | Discord.BotToken | The App Bot User Token from the discordapp Bot page |
 | Discord.ServerID | The server ID of the Discord server the Bot is monitoring |
-| Discord.ChatChannel | The name of the Discord channel where SWG chat messages should be posted |
+| Discord.ChatChannel | The default Discord channel where SWG chat messages should be posted when no per-room mapping is configured |
+| Discord.ChatRoomChannels | Optional key/value mapping of SWG room name/path to Discord channel name (`{"RoomName":"discord-channel"}`) |
 | Discord.NotificationChannel | The name of the Discord channel that server up/down events should be posted to |
 | Discord.NotificationMentionRole | The name of the role that should be mentioned in up/down notifications |
 | Discord.NotificationMentionUserID| If role is left blank, you can put a Discord user ID here to notify a single user.  This user can also issue the bot commands via direct message. |
