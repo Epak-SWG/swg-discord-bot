@@ -1,6 +1,6 @@
 # Progor-Chat
 
-Progor-Chat is a custom Discord and SWGEMU client that links the two platforms together.  Like Core3 is an SWG Server emulator, Progor-Chat acts as an SWG Client emulator.  It sends the same packets the client would to login and select a character, then ignores all the packets the server sends about the world around the character, and only listens for packets related to Chat.  When it receives chats in the channel specified, it forwards the content of those messages to the Discord client to post in it's specified channel.  It does not post Discord chat messages back into the in-game channel (one-way SWG ➜ Discord relay).   This repository contains a highly customized version of the bot used by the SWG Infinity server.
+Progor-Chat is a custom Discord and SWGEMU client that links the two platforms together.  Like Core3 is an SWG Server emulator, Progor-Chat acts as an SWG Client emulator.  It sends the same packets the client would to login and select a character, then ignores all the packets the server sends about the world around the character, and only listens for packets related to Chat.  When it receives chats in the channel specified, it forwards the content of those messages to the Discord client to post in it's specified channel. The bot can listen to one or many SWG chat rooms.  It does not post Discord chat messages back into the in-game channel (one-way SWG ➜ Discord relay).   This repository contains a highly customized version of the bot used by the SWG Infinity server.
 
 Since it's constantly in communication with the game server, it knows quickly when the server goes down.  It will then post a message to a separate channel (can be the same or different) and mention a Discord role - usually your staff / admin role - to quickly notify someone who can get the server back up.
 
@@ -26,7 +26,7 @@ npm install
 
 to install the necessary dependencies (like the Discord client).
 
-Create a file named config.json with these values populated with your server, account, character, and chat room / channel specifics.  You can copy config.example.json to get you started.
+Create a file named config.json with these values populated with your server, account, character, and chat room / channel specifics. Use `SWG.ChatRoom` for one room or `SWG.ChatRooms` to join multiple rooms.  You can copy config.example.json to get you started.
 For instance:
 ```json
 {
@@ -39,6 +39,10 @@ For instance:
         "Password": "SWG Account Password",
         "Character": "SWG Bot Character",
         "ChatRoom": "SWG.SWG Server Name.GeneralChatRoomName",
+        "ChatRooms": [
+            "SWG.SWG Server Name.GeneralChatRoomName",
+            "SWG.SWG Server Name.StaffChatRoomName"
+        ],
         "verboseSWGLogging": false
     },
     "Discord": {
@@ -66,7 +70,8 @@ For instance:
 | SWG.Username | The Username you type in the SWG splash screen. |
 | SWG.Password | The Password you type in the SWG splash screen. |
 | SWG.Character | The Character you choose on the character select screen.  First name only.  Case matters. |
-| SWG.ChatRoom | The name of the ChatRoom it should replicate to/from.  If nested in the tree, use dots, i.e. Chat.General.Main |
+| SWG.ChatRoom | Legacy single-room setting. The name of one ChatRoom it should replicate from. |
+| SWG.ChatRooms | Optional list of chat rooms to join. Supports full paths (`SWG.Server.Room`) or short names (`Room`). When multiple rooms are configured, Discord messages are prefixed with the room name. |
 | verboseSWGLogging| Enable or disable verbose console logging for SWG functions |
 | Discord.BotName | The App Name of the Bot you created in discordapp.com/developers |
 | Discord.PresenceName | The bot will show "Playing PresenceName" |

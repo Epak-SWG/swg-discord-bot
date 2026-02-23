@@ -7,6 +7,10 @@
         "Password": "SWG Account Password",
         "Character": "SWG Bot Character",
         "ChatRoom": "SWG.SWG Server Name.GeneralChatRoomName",
+        "ChatRooms": [
+            "SWG.SWG Server Name.GeneralChatRoomName",
+            "SWG.SWG Server Name.StaffChatRoomName"
+        ],
         "verboseSWGLogging": false
     },
     "Discord": {
@@ -23,4 +27,3 @@
         "verboseDiscordLogging": false
     }
 }
-
