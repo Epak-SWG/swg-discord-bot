@@ -1,6 +1,6 @@
 # Progor-Chat
 
-Progor-Chat is a custom Discord and SWGEMU client that links the two platforms together.  Like Core3 is an SWG Server emulator, Progor-Chat acts as an SWG Client emulator.  It sends the same packets the client would to login and select a character, then ignores all the packets the server sends about the world around the character, and only listens for packets related to Chat.  When it receives chats in the channel specified, it forwards the content of those messages to the Discord client to post in it's specified channel.  It also does the reverse - listens for Discord messages and posts them in the in-game chat channel.   This repository contains a highly customized version of the bot used by the SWG Infinity server.
+Progor-Chat is a custom Discord and SWGEMU client that links the two platforms together.  Like Core3 is an SWG Server emulator, Progor-Chat acts as an SWG Client emulator.  It sends the same packets the client would to login and select a character, then ignores all the packets the server sends about the world around the character, and only listens for packets related to Chat.  When it receives chats in the channel specified, it forwards the content of those messages to the Discord client to post in it's specified channel.  It does not post Discord chat messages back into the in-game channel (one-way SWG ➜ Discord relay).   This repository contains a highly customized version of the bot used by the SWG Infinity server.
 
 Since it's constantly in communication with the game server, it knows quickly when the server goes down.  It will then post a message to a separate channel (can be the same or different) and mention a Discord role - usually your staff / admin role - to quickly notify someone who can get the server back up.
 
@@ -72,7 +72,7 @@ For instance:
 | Discord.PresenceName | The bot will show "Playing PresenceName" |
 | Discord.BotToken | The App Bot User Token from the discordapp Bot page |
 | Discord.ServerID | The server ID of the Discord server the Bot is monitoring |
-| Discord.ChatChannel | The name of the Discord channel the Bot should replicate to/from |
+| Discord.ChatChannel | The name of the Discord channel where SWG chat messages should be posted |
 | Discord.NotificationChannel | The name of the Discord channel that server up/down events should be posted to |
 | Discord.NotificationMentionRole | The name of the role that should be mentioned in up/down notifications |
 | Discord.NotificationMentionUserID| If role is left blank, you can put a Discord user ID here to notify a single user.  This user can also issue the bot commands via direct message. |
