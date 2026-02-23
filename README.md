@@ -4,11 +4,9 @@ Progor-Chat is a custom Discord and SWGEMU client that links the two platforms t
 
 Since it's constantly in communication with the game server, it knows quickly when the server goes down.  It will then post a message to a separate channel (can be the same or different) and mention a Discord role - usually your staff / admin role - to quickly notify someone who can get the server back up.
 
-The bot supports three special commands from Discord, and it will listen in the default channel for the commands and the notification channel.  The notification user can also send DM messages to the bot.
+The bot supports two special commands from Discord, and it will listen in the default channel for the commands and the notification channel.  The notification user can also send DM messages to the bot.
 
 * !fixchat - Restarts the bot
-
-* !pausechat - Toggles the bot from paused to not paused
 
 * !debugchat - Turns on verbose logging for all modules
 

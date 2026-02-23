@@ -99,12 +99,6 @@ client.on("messageCreate", async (message) => {
         console.log(getFullTimestamp() + " - Received !fixchat request from " + sender);
         setTimeout(() => { process.exit(0); }, 500);  //Exit in 500 ms, allow time for reply to be sent
     }
-    if (messageContent.startsWith('!pausechat')) {
-        message.reply(SWG.paused ? "Un-pausing chatbot" : "Pausing chatbot");
-        console.log(getFullTimestamp() + " - Received !pausechat request from " + sender);
-        SWG.paused = !SWG.paused;
-    }
-
     if (messageContent.startsWith('!debugchat') && message.author.id == notificationUserID) {
         message.reply("Enabling chatbot debug mode");
         console.log(getFullTimestamp() + " - Received !debugchat request from " + sender + ", sender = " + message.author.username);
